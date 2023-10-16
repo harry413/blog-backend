@@ -1,3 +1,4 @@
+import { json } from "express";
 import User from "../Models/User.js";
 import bcrypt from "bcryptjs";
 
@@ -31,7 +32,8 @@ export const signup = async(req, res, next) => {
     const user = new User({
         name,
         email,
-        password:json.parse(hashPassword),
+        password:hashPassword,
+        blogs:[],
     });
     
     try{
@@ -41,6 +43,7 @@ export const signup = async(req, res, next) => {
     }
     return res.status(201).json({user})
 };
+
 export const signin = async(req,res,next) => {
     const { email, password } = req.body;
     
@@ -59,7 +62,37 @@ export const signin = async(req,res,next) => {
         return res.status(400).json({message: "incorrect password"});
     }
     return res.status(200).json({message: "Login succesfull!!!"});
-}
+};
 
+export const deleteUser = async(req, res, next) =>{
+    const userId = req.params.id;
+    try{
+        await User.findOneAndRemove(userId);
+    }catch(error){
+        return console.log(error);
+    }
+    if(!userId){
+        return res.status(400).json({message:"unable to find the user........"})
+    }
+    return res.status(200).json({mssage:"succesfully deleted user"});
+};
+export const updateUser = async(req, res, next) => {
+    const { name, email } = req.body;
+    const userId =  req.params.id;
+
+    let user;
+    try{
+         user = await User.findByIdAndUpdate(userId,{
+            name,
+            email
+        });
+    }catch(error){
+        return console.log(error);
+    }
+    if(!userId){
+        return res.status(400).json({message:"unable to find the user...."})
+    }
+    return res.status(200).json({user});
+}
 
 
